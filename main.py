@@ -13,10 +13,10 @@ while camera:
     success,  frame = reader.read()
 
     for code in decode(frame):
-        # print(code.type)
-        # print(code.data.decode('utf-8'))
-        registered_codes.append(code.data.decode('utf-8'))
-        print(registered_codes)
+        print(code.type)
+        print(code.data.decode('utf-8'))
+        # registered_codes.append(code.data.decode('utf-8'))
+        # print(registered_codes)
 
     cv2.imshow('code-scan', frame)
     cv2.waitKey(2)
