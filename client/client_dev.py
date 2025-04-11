@@ -1,3 +1,4 @@
+
 import cv2
 from pyzbar.pyzbar import decode
 import requests
@@ -15,6 +16,7 @@ def upload(timestamp, code_type, data):
         'data': data
     }
     headers = {'content-type': 'application/json'}
+    print(json.dumps(payload))
     response = requests.post(
         reg_url, data=json.dumps(payload), headers=headers)
     print(response.text)
@@ -25,20 +27,18 @@ reader.set(3, 1280)
 reader.set(4, 720)
 camera = True
 
-# Debounce
+# Debounce tracking
 last_seen = {}
 cooldown_seconds = 3
 
 while camera:
     success, frame = reader.read()
 
-    detected_codes = set()
-
     for code in decode(frame):
         code_type = code.type
         data = code.data.decode('utf-8')
 
-        # Border
+        # Bounding box
         pts = code.polygon
         if pts:
             pts = [(pt.x, pt.y) for pt in pts]
@@ -50,15 +50,13 @@ while camera:
         cv2.putText(frame, f'{code_type}: {data}', (x, y - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 16, 240), 2)
 
-        detected_codes.add(data)
-
-    # Debounce
-    current_time = time.time()
-    for data in detected_codes:
+        # Debounce check
+        current_time = time.time()
         if data not in last_seen or (current_time - last_seen[data]) > cooldown_seconds:
+            print(code_type, data)
             timestamp = datetime.now(timezone.utc).isoformat(
                 timespec='milliseconds').replace('+00:00', 'Z')
-            upload(timestamp, 'QR', data)
+            upload(timestamp, code_type, data)
             last_seen[data] = current_time
 
     cv2.imshow('code-scan', frame)
