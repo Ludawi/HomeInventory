@@ -1,5 +1,6 @@
 from flask import Flask, request, Response, jsonify, g
 import sqlite3
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -43,7 +44,6 @@ def db_list():
     rows = cur.fetchall()
     cur.close()
 
-    # Convert row tuples to dicts
     result = [
         {
             'id': row[0],
@@ -58,6 +58,25 @@ def db_list():
     return jsonify(result)
 
 
+def add_item(item):
+
+    code_type = item.get("type")
+    code = item.get("data")
+    timestamp_iso = datetime.strptime(
+        item.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
+    timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('''
+        INSERT INTO items (code_type, code, timestamp)
+        VALUES (?, ?, ?)
+    ''', (code_type, code, timestamp))
+
+    db.commit()
+    cur.close()
+
+
 @app.route('/register', methods=['POST'])
 def register():
     if not request.is_json:
@@ -70,6 +89,8 @@ def register():
         return jsonify({"error": "Missing required fields"}), 400
 
     # add more validation here if needed
+
+    add_item(data)
 
     return jsonify({
         "message": "Registration successful",

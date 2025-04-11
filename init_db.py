@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code_type TEXT NOT NULL,
     code TEXT NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
+    timestamp TIMESTAMP,
     description TEXT,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
