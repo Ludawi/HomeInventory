@@ -7,6 +7,15 @@ import json
 import time
 
 reg_url = 'http://127.0.0.1:5000/register'
+server_url = 'http://127.0.0.1:5000/'
+
+
+def check_server():
+    try:
+        response = requests.get(server_url)
+        return response.status_code == 200
+    except:
+        return False
 
 
 def upload(timestamp, code_type, data):
@@ -46,6 +55,9 @@ camera = True
 # Debounce
 last_seen = {}
 cooldown_seconds = 3
+# Pause
+pause_message = "Waiting on Server response ..."
+font = cv2.FONT_HERSHEY_SIMPLEX
 
 while camera:
     success, frame = reader.read()
@@ -81,6 +93,19 @@ while camera:
         if data not in last_seen or (current_time - last_seen[data]) > cooldown_seconds:
             timestamp = datetime.now(timezone.utc).isoformat(
                 timespec='milliseconds').replace('+00:00', 'Z')
+
+    # Check server availability
+            while not check_server():
+                pause_frame = frame.copy()
+                cv2.putText(pause_frame, pause_message, (100, 100),
+                            font, 1, (255, 255, 255), 3, cv2.LINE_AA)
+                cv2.imshow('code-scan', pause_frame)
+                if cv2.waitKey(1000) & 0xFF == ord('q'):
+                    break
+
+            if not camera:
+                break
+
             upload(timestamp, 'QR', data)
             last_seen[data] = current_time
 
