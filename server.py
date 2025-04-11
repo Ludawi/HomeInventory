@@ -1,3 +1,4 @@
+from os import remove
 from flask import Flask, request, Response, jsonify, g
 import sqlite3
 from datetime import datetime
@@ -58,6 +59,16 @@ def db_list():
     return jsonify(result)
 
 
+def get_amount(code):
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('SELECT count(*) FROM items WHERE code=?', (code,))
+    count = cur.fetchone()
+    cur.close()
+    count: int
+    return count
+
+
 def add_item(item):
 
     code_type = item.get("type")
@@ -65,6 +76,8 @@ def add_item(item):
     timestamp_iso = datetime.strptime(
         item.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
     timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+    print("There are", get_amount(code), "of this")
 
     db = get_db()
     cur = db.cursor()
@@ -77,6 +90,10 @@ def add_item(item):
     cur.close()
 
 
+def remove_item(item):
+    return 'not yet'
+
+
 @app.route('/register', methods=['POST'])
 def register():
     if not request.is_json:
@@ -87,8 +104,6 @@ def register():
     required_fields = {"timestamp", "type", "data"}
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
-
-    # add more validation here if needed
 
     add_item(data)
 
@@ -109,6 +124,8 @@ def unregister():
     required_fields = {"timestamp", "type", "data"}
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
+
+    remove_item(data)
 
     return jsonify({
         "message": "Unregistration successful",
