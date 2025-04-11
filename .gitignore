@@ -1,3 +1,5 @@
 database.db
 /temp
 /tmp
+__pycache__
+/__pycache__
