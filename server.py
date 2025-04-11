@@ -26,14 +26,12 @@ def register():
 
     data = request.get_json()
 
-    # Validate the expected keys
-    required_fields = {"timestamp", "codeType", "data"}
+    required_fields = {"timestamp", "type", "data"}
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # You can add more validation here if needed
+    # add more validation here if needed
 
-    # Just echoing back the received data for now
     return jsonify({
         "message": "Registration successful",
         "received": data
@@ -48,13 +46,10 @@ def unregister():
     data = request.get_json()
 
     # Validate the expected keys
-    required_fields = {"timestamp", "codeType", "data"}
+    required_fields = {"timestamp", "type", "data"}
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # You can add more validation here if needed
-
-    # Just echoing back the received data for now
     return jsonify({
         "message": "Unregistration successful",
         "received": data
