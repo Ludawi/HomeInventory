@@ -1,0 +1,109 @@
+a:link { text-decoration: none; color: black;}
+a:visited { text-decoration: none; color: black;}
+a:hover { text-decoration: none; color: black;}
+a:active { text-decoration: none; color: black;}
+
+
+html, body{
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    font-family: 'Helvetica';
+    background: #233D53;
+}
+
+body{
+    flex: 1;
+}
+
+.topbar{
+    height: 70px;
+    position: sticky;
+    text-align: center;
+    background-color: #F9F3E6;
+    font-family: 'Helvetica' 'sans-serif';
+}
+.topbar a{
+    font-size: 20px;
+    top: 10%;
+    position: relative;
+    padding: 45px;
+    float: center;
+    text-align: center;
+}
+.topbar a:hover{
+    color: #FA532E;
+    transition: 0.5s;
+}
+.topbar img{
+    width: 100px;
+    top: 25%;
+    position: relative;
+}
+
+.box {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Helvetica', 'sans-serif';
+
+}
+.box h1{
+    color: white;
+    font-size: 40px;
+}
+.box input[type = "text"]{
+    border: 0;
+    background: white;
+    display: block;
+    margin: 15px auto;
+    text-align: left;
+    border: 2px solid white;
+    padding: 15px 10px;
+    width: 280px;
+    outline: none;
+    color: #233D53;
+    border-radius: 25px;
+    transition: 0.5s;
+    font-size: 17px;
+    font-family: "Consolas";
+    font-weight: 600;
+    text-transform: uppercase; /* maybe remove in final version? */
+}
+.box input[type = "text"]:focus{
+    border-color: #064B73;
+}
+.box input[type = "button"]{
+    padding: 10px 12px;
+    font-size: 20px;
+    text-align: center;
+    border: 2px solid;
+    border-color: white;
+    color: white;
+    background: none;
+    border-radius: 25px;
+    font-size: 15px;
+    font-family: "Helvetica";
+    font-weight: 300;
+}
+.box input[type = "button"]:hover{
+    background-color: #FA532E;
+    border-color: #FA532E;
+    transition: 0.5s;
+}
+
+footer.impress{
+    background: #F9F3E6;
+    color: #233D53;
+    padding: 20px;
+    margin-top: auto;
+    text-align: center;
+    height: clamp(100px, 15vh, 15vh);
+}

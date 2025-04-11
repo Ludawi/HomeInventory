@@ -1,5 +1,4 @@
-from os import remove
-from flask import Flask, request, Response, jsonify, g
+from flask import Flask, request, Response, jsonify, g, render_template
 import sqlite3
 from datetime import datetime
 
@@ -25,6 +24,16 @@ def close_connection(exception):
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+
+@app.route('/inventory')
+def inventory():
+    return render_template('inventory.html')
+
+
+@app.route('/health')
+def health():
     return '''
     <html>
         <body>
@@ -41,7 +50,7 @@ def db_list():
     db = get_db()
     cur = db.cursor()
     cur.execute(
-        'SELECT id, code_type, code, description, registered_at FROM items')
+        'SELECT id, code_type, code, description, item_count, registered_at FROM items')
     rows = cur.fetchall()
     cur.close()
 
@@ -51,7 +60,8 @@ def db_list():
             'code_type': row[1],
             'code': row[2],
             'description': row[3],
-            'registered_at': row[4]
+            'count': row[4],
+            'registered_at': row[5]
         }
         for row in rows
     ]
@@ -59,14 +69,43 @@ def db_list():
     return jsonify(result)
 
 
-def get_amount(code):
+def item_exists(code):
     db = get_db()
     cur = db.cursor()
-    cur.execute('SELECT count(*) FROM items WHERE code=?', (code,))
-    count = cur.fetchone()
+
+    cur.execute('SELECT 1 FROM items WHERE code=? LIMIT 1', (code,))
+    result = cur.fetchone()
+    print("DB result:", result)
+    if result is None:
+        db.commit()
+        cur.close()
+        return False
+    else:
+        cur.execute(
+            'SELECT item_count FROM items WHERE code=? LIMIT 1', (code,))
+        result = cur.fetchone()
+
+    if result is None:
+        db.commit()
+        cur.close()
+        return False
+    else:
+        return result[0]
+
+
+def add_count(code, amount, timestamp):
+
+    count = amount + 1
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('''
+        UPDATE items
+        SET item_count=?, timestamp=?
+        WHERE code=?
+    ''', (count, timestamp, code,))
+
+    db.commit()
     cur.close()
-    count: int
-    return count
 
 
 def add_item(item):
@@ -76,22 +115,20 @@ def add_item(item):
     timestamp_iso = datetime.strptime(
         item.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
     timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    amount = item_exists(code)
+    if not amount:
+        # Create new entry
+        db = get_db()
+        cur = db.cursor()
+        cur.execute('''
+            INSERT INTO items (code_type, code, timestamp, item_count)
+            VALUES (?, ?, ?, ?)
+        ''', (code_type, code, timestamp, 1))
 
-    print("There are", get_amount(code), "of this")
-
-    db = get_db()
-    cur = db.cursor()
-    cur.execute('''
-        INSERT INTO items (code_type, code, timestamp)
-        VALUES (?, ?, ?)
-    ''', (code_type, code, timestamp))
-
-    db.commit()
-    cur.close()
-
-
-def remove_item(item):
-    return 'not yet'
+        db.commit()
+        cur.close()
+    else:
+        add_count(code, amount, timestamp)
 
 
 @app.route('/register', methods=['POST'])
@@ -111,6 +148,48 @@ def register():
         "message": "Registration successful",
         "received": data
     }), 200
+
+
+def substract_count(code, amount, timestamp):
+
+    count = amount - 1
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('''
+        UPDATE items
+        SET item_count=?, timestamp=?
+        WHERE code=?
+    ''', (count, timestamp, code,))
+
+    db.commit()
+    cur.close()
+
+
+def remove_item(item):
+
+    code = item.get("data")
+    timestamp_iso = datetime.strptime(
+        item.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
+    timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    amount = item_exists(code)
+
+    if not amount or amount <= 0:
+        return
+    else:
+        substract_count(code, amount, timestamp)
+        return
+
+    count = amount - 1
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('''
+        UPDATE items
+        SET count=?, timestamp=?
+    ''', (count, timestamp,))
+
+    db.commit()
+    cur.close()
+    return
 
 
 @app.route('/unregister', methods=['POST'])

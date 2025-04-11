@@ -5,14 +5,29 @@ import requests
 from datetime import datetime, timezone
 import json
 import time
+import argparse
+
 
 reg_url = 'http://127.0.0.1:5000/register'
-server_url = 'http://127.0.0.1:5000/'
+unreg_url = 'http://127.0.0.1:5000/unregister'
+server_url = 'http://127.0.0.1:5000/health'
+
+parser = argparse.ArgumentParser(
+    description='set client to post on register/unregister endpoint, default: register')
+parser.add_argument('--mode', action='store', dest='mode', default='register')
+args = parser.parse_args()
+print(args)
+if args.mode == 'unregister':
+    url = unreg_url
+    print("client running in UNREGISTER mode")
+else:
+    url = reg_url
+    print("client running in REGISTER mode")
 
 
 def check_server():
     try:
-        response = requests.get(server_url)
+        response = requests.get(server_url)  # health endpoint
         return response.status_code == 200
     except:
         return False
@@ -26,7 +41,7 @@ def upload(timestamp, code_type, data):
     }
     headers = {'content-type': 'application/json'}
     response = requests.post(
-        reg_url, data=json.dumps(payload), headers=headers)
+        url, data=json.dumps(payload), headers=headers)
     print(response.text)
 
 
@@ -94,11 +109,11 @@ while camera:
             timestamp = datetime.now(timezone.utc).isoformat(
                 timespec='milliseconds').replace('+00:00', 'Z')
 
-    # Check server availability
+    # Loading screen
             while not check_server():
                 pause_frame = frame.copy()
                 cv2.putText(pause_frame, pause_message, (100, 100),
-                            font, 1, (255, 255, 255), 3, cv2.LINE_AA)
+                            font, 1, (255, 0, 0), 3, cv2.LINE_AA)
                 cv2.imshow('code-scan', pause_frame)
                 if cv2.waitKey(1000) & 0xFF == ord('q'):
                     break

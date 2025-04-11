@@ -11,9 +11,10 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code_type TEXT NOT NULL,
-    code TEXT NOT NULL,
+    code TEXT NOT NULL UNIQUE,
     timestamp TIMESTAMP,
     description TEXT,
+    item_count int,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 ''')
