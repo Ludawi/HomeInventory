@@ -106,6 +106,7 @@ def add_count(code, amount, timestamp):
 
     db.commit()
     cur.close()
+    return 200
 
 
 def add_item(item):
@@ -116,7 +117,7 @@ def add_item(item):
         item.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
     timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     amount = item_exists(code)
-    if not amount:
+    if amount == None:
         # Create new entry
         db = get_db()
         cur = db.cursor()
@@ -127,8 +128,10 @@ def add_item(item):
 
         db.commit()
         cur.close()
+        return 201
     else:
         add_count(code, amount, timestamp)
+        return 200
 
 
 @app.route('/register', methods=['POST'])
@@ -142,12 +145,12 @@ def register():
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
 
-    add_item(data)
+    return_code = add_item(data)
 
     return jsonify({
         "message": "Registration successful",
         "received": data
-    }), 200
+    }), return_code
 
 
 def substract_count(code, amount, timestamp):
@@ -163,6 +166,7 @@ def substract_count(code, amount, timestamp):
 
     db.commit()
     cur.close()
+    return 200
 
 
 def remove_item(item):
@@ -173,23 +177,11 @@ def remove_item(item):
     timestamp = timestamp_iso.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     amount = item_exists(code)
 
-    if not amount or amount <= 0:
-        return
+    if amount == None or amount <= 0:
+        return 304
     else:
         substract_count(code, amount, timestamp)
-        return
-
-    count = amount - 1
-    db = get_db()
-    cur = db.cursor()
-    cur.execute('''
-        UPDATE items
-        SET count=?, timestamp=?
-    ''', (count, timestamp,))
-
-    db.commit()
-    cur.close()
-    return
+        return 200
 
 
 @app.route('/unregister', methods=['POST'])
@@ -204,12 +196,12 @@ def unregister():
     if not required_fields.issubset(data):
         return jsonify({"error": "Missing required fields"}), 400
 
-    remove_item(data)
+    return_code = remove_item(data)
 
     return jsonify({
         "message": "Unregistration successful",
         "received": data
-    }), 200
+    }), return_code
 
 
 if __name__ == '__main__':
