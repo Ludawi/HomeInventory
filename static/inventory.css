@@ -45,7 +45,7 @@ body{
 .box input[type = "text"]:focus{
     border-color: #064B73;
 }
-.box input[type = "button"]{
+.box input[type = "submit"]{
     padding: 10px 12px;
     font-size: 20px;
     text-align: center;
@@ -58,7 +58,7 @@ body{
     font-family: "Helvetica";
     font-weight: 300;
 }
-.box input[type = "button"]:hover{
+.box input[type = "submit"]:hover{
     background-color: #FA532E;
     border-color: #FA532E;
     color: white;

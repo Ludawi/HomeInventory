@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, jsonify, g, render_template
+from flask import Flask, request, Response, jsonify, g, render_template, redirect
 from db import Db
 
 app = Flask(__name__)
@@ -9,14 +9,9 @@ def close_connection(exception):
     Db.close_connection(exception)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
-
-
-@app.route('/inventory')
-def inventory():
-    return render_template('inventory.html')
 
 
 @app.route('/health')
@@ -35,6 +30,22 @@ def health():
 @app.route('/db')
 def db_list():
     return jsonify(Db.list_items())
+
+
+@app.route('/view', methods=['POST'])
+def show_record():
+    code = None
+    if request.method == 'POST':
+        code = request.form.get('code')
+
+    print(Db.get_record(code))
+    return jsonify(Db.get_record(code))
+    # return render_template('show_record.html')
+
+
+@app.route('/inventory')
+def inventory():
+    return render_template('inventory.html')
 
 
 @app.route('/register', methods=['POST'])

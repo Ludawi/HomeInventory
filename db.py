@@ -20,6 +20,29 @@ class Db:
             db.close()
 
     @staticmethod
+    def get_record(code):
+
+        db = Db.get_connection()
+        cur = db.cursor()
+        cur.execute(
+            '''SELECT id, code_type, code, description, item_count, registered_at
+            FROM items
+            WHERE code=?''',
+            (code,)
+        )
+        record = cur.fetchone()
+        cur.close()
+
+        return {
+            'id': record[0],
+            'code_type': record[1],
+            'code': record[2],
+            'description': record[3],
+            'count': record[4],
+            'registered_at': record[5]
+        }
+
+    @ staticmethod
     def list_items():
         db = Db.get_connection()
         cur = db.cursor()
@@ -39,21 +62,7 @@ class Db:
             } for row in rows
         ]
 
-        # result = [
-        #     {
-        #         'id': row[0],
-        #         'code_type': row[1],
-        #         'code': row[2],
-        #         'description': row[3],
-        #         'count': row[4],
-        #         'registered_at': row[5]
-        #     }
-        #     for row in rows
-        # ]
-        #
-        # return jsonify(result)
-
-    @staticmethod
+    @ staticmethod
     def item_exists(code):
         db = Db.get_connection()
         cur = db.cursor()
@@ -63,7 +72,7 @@ class Db:
         cur.close()
         return result[0] if result else None
 
-    @staticmethod
+    @ staticmethod
     def add_count(code, amount, timestamp):
 
         count = amount + 1
@@ -79,7 +88,7 @@ class Db:
         cur.close()
         return 200
 
-    @staticmethod
+    @ staticmethod
     def substract_count(code, amount, timestamp):
         count = amount - 1
         db = Db.get_connection()
@@ -93,7 +102,7 @@ class Db:
         cur.close()
         return 200
 
-    @staticmethod
+    @ staticmethod
     def add_item(item):
         code_type = item.get("type")
         code = item.get("data")
@@ -117,7 +126,7 @@ class Db:
             cur.close()
             return Db.add_count(code, amount, timestamp)
 
-    @staticmethod
+    @ staticmethod
     def remove_item(item):
         code = item.get("data")
         timestamp_iso = datetime.strptime(
