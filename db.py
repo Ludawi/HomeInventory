@@ -33,6 +33,9 @@ class Db:
         record = cur.fetchone()
         cur.close()
 
+        if record is None:
+            return None
+
         return {
             'id': record[0],
             'code_type': record[1],
@@ -50,6 +53,9 @@ class Db:
             'SELECT id, code_type, code, description, item_count, registered_at FROM items')
         rows = cur.fetchall()
         cur.close()
+
+        if rows is None:
+            return None
 
         return [
             {

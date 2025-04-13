@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, jsonify, g, render_template, redirect
+from flask import Flask, request, Response, jsonify, g, render_template, redirect, send_from_directory
 from db import Db
 
 app = Flask(__name__)
@@ -27,20 +27,27 @@ def health():
     '''
 
 
-@app.route('/db')
+@app.route('/api')
 def db_list():
-    return jsonify(Db.list_items())
+    # return jsonify(Db.list_items())
+    result = Db.list_items()
+    if result is None:
+        return jsonify({"error": "Resource not found"}), 404
+    else:
+        return jsonify(result)
 
 
-@app.route('/view', methods=['POST'])
-def show_record():
+@app.route('/api/record', methods=['POST'])
+def show_record():  # returns single record by code
     code = None
     if request.method == 'POST':
         code = request.form.get('code')
 
-    print(Db.get_record(code))
-    return jsonify(Db.get_record(code))
-    # return render_template('show_record.html')
+    result = Db.get_record(code)
+    if result is None:
+        return jsonify({"error": "Resource not found"}), 404
+    else:
+        return jsonify(result)
 
 
 @app.route('/inventory')
