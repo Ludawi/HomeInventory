@@ -40,8 +40,17 @@ def db_list():
 @app.route('/api/record', methods=['POST'])
 def show_record():  # returns single record by code
     code = None
-    if request.method == 'POST':
-        code = request.form.get('code')
+
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+
+    data = request.get_json()
+    required_fields = {"code"}
+
+    if not required_fields.issubset(data):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    code = data.get("code")
 
     result = Db.get_record(code)
     if result is None:
